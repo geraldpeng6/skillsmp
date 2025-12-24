@@ -23,7 +23,6 @@ const PLATFORM_MAP = {
   "darwin-x64": "darwin-x86_64",
   "darwin-arm64": "darwin-aarch64",
   "linux-x64": "linux-x86_64",
-  "linux-arm64": "linux-aarch64",
   "win32-x64": "windows-x86_64.exe",
 };
 
