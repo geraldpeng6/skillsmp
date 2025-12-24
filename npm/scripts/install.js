@@ -114,7 +114,12 @@ async function main() {
       fs.chmodSync(destPath, 0o755);
     }
 
-    console.log(`✅ 安装成功: ${destPath}`);
+    console.log(`✅ 安装成功!`);
+    console.log("");
+    console.log("使用方法:");
+    console.log("  sks <关键词>          搜索 AI Skills");
+    console.log("  sks python --limit 5  搜索并限制返回数量");
+    console.log("  sks --help            查看帮助");
   } catch (err) {
     console.error(`❌ 安装失败: ${err.message}`);
     console.error("");

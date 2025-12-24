@@ -1,6 +1,6 @@
 {
   "name": "skillsmp-search",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "SkillsMP Semantic Search CLI - 搜索 AI Skills",
   "bin": {
     "sks": "bin/sks"
