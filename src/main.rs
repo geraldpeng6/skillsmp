@@ -24,6 +24,11 @@ use serde::{Deserialize, Serialize};
 // API 基础地址
 const BASE_URL: &str = "https://skillsmp.com/api/v1";
 
+// API 密钥（编译时嵌入）
+// env! 宏在编译时读取环境变量，嵌入到二进制文件中
+// 编译命令：SKILLSMP_API_KEY=xxx cargo build --release
+const API_KEY: &str = env!("SKILLSMP_API_KEY");
+
 // ============================================================================
 // 命令行参数定义
 // ============================================================================
@@ -51,10 +56,6 @@ struct Cli {
     #[arg(short, long, default_value = "recent")]
     sort: String,
 
-    /// API 密钥
-    /// 可通过 --api-key 传入，或设置环境变量 SKILLSMP_API_KEY
-    #[arg(long, env = "SKILLSMP_API_KEY")]
-    api_key: String,
 }
 
 // ============================================================================
@@ -164,7 +165,7 @@ fn search_skills(cli: &Cli) -> Result<ApiResponse> {
     let client = reqwest::blocking::Client::new();
     let response = client
         .get(&url)
-        .header("Authorization", format!("Bearer {}", cli.api_key))
+        .header("Authorization", format!("Bearer {}", API_KEY))
         .header("Content-Type", "application/json")
         .send()
         .context("发送请求失败")?; // ? 操作符：出错时提前返回错误
@@ -178,10 +179,6 @@ fn search_skills(cli: &Cli) -> Result<ApiResponse> {
 /// # 返回
 /// - `Result<()>`: () 表示空值（类似于 void），Result 包装表示可能出错
 fn main() -> Result<()> {
-    // 加载 .env 文件中的环境变量（如果存在）
-    // .ok() 忽略加载失败的错误（文件不存在时）
-    dotenvy::dotenv().ok();
-
     // 解析命令行参数
     let cli = Cli::parse();
 
