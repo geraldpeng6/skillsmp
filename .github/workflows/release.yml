@@ -16,6 +16,9 @@ on:
 env:
   CARGO_TERM_COLOR: always
 
+permissions:
+  contents: write
+
 jobs:
   # ============================================================================
   # 构建多平台二进制
