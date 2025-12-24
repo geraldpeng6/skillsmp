@@ -16,7 +16,6 @@ const { execSync } = require("child_process");
 // 配置
 const PACKAGE_NAME = "sks";
 const GITHUB_REPO = "geraldpeng6/skillsmp";
-const VERSION = require("../package.json").version;
 
 // 平台映射：Node.js 平台名 -> 二进制文件名后缀
 const PLATFORM_MAP = {
@@ -45,10 +44,11 @@ function getBinaryName() {
 }
 
 /**
- * 获取下载 URL
+ * 获取下载 URL（始终使用最新版本）
  */
 function getDownloadUrl(binaryName) {
-  return `https://github.com/${GITHUB_REPO}/releases/download/v${VERSION}/${binaryName}`;
+  // 使用 latest 而非固定版本，npm 版本与二进制版本解耦
+  return `https://github.com/${GITHUB_REPO}/releases/latest/download/${binaryName}`;
 }
 
 /**
