@@ -6,3 +6,10 @@
 
 # macOS
 .DS_Store
+
+# npm 下载的二进制（由 postinstall 脚本生成）
+npm/bin/sks
+npm/bin/sks.exe
+
+# Node.js
+node_modules/

@@ -1,0 +1,30 @@
+{
+  "name": "skillsmp-search",
+  "version": "0.1.0",
+  "description": "SkillsMP Semantic Search CLI - 搜索 AI Skills",
+  "bin": {
+    "sks": "bin/sks"
+  },
+  "scripts": {
+    "postinstall": "node scripts/install.js"
+  },
+  "files": [
+    "bin",
+    "scripts"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/geraldpeng6/skillsmp"
+  },
+  "keywords": [
+    "skillsmp",
+    "ai",
+    "skills",
+    "claude",
+    "cli"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=14"
+  }
+}
