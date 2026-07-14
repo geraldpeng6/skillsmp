@@ -11,11 +11,14 @@
 const fs = require("fs");
 const path = require("path");
 const https = require("https");
-const { execSync } = require("child_process");
+const { pipeline } = require("stream");
+const { promisify } = require("util");
 
 // 配置
 const PACKAGE_NAME = "sks";
 const GITHUB_REPO = "geraldpeng6/skillsmp";
+const MAX_REDIRECTS = 5;
+const pipelineAsync = promisify(pipeline);
 
 // 平台映射：Node.js 平台名 -> 二进制文件名后缀
 const PLATFORM_MAP = {
@@ -54,38 +57,44 @@ function getDownloadUrl(binaryName) {
 /**
  * 下载文件
  */
-function download(url, dest) {
-  return new Promise((resolve, reject) => {
-    console.log(`📥 下载: ${url}`);
-
-    const file = fs.createWriteStream(dest);
-
-    https
-      .get(url, (response) => {
-        // 处理重定向（GitHub Releases 会重定向）
-        if (response.statusCode === 302 || response.statusCode === 301) {
-          download(response.headers.location, dest)
-            .then(resolve)
-            .catch(reject);
-          return;
-        }
-
-        if (response.statusCode !== 200) {
-          reject(new Error(`下载失败: HTTP ${response.statusCode}`));
-          return;
-        }
-
-        response.pipe(file);
-        file.on("finish", () => {
-          file.close();
-          resolve();
-        });
-      })
-      .on("error", (err) => {
-        fs.unlink(dest, () => {});
-        reject(err);
-      });
+async function download(url, dest, redirectCount = 0) {
+  const response = await new Promise((resolve, reject) => {
+    https.get(url, resolve).on("error", reject);
   });
+
+  const isRedirect = [301, 302, 303, 307, 308].includes(response.statusCode);
+  if (isRedirect && response.headers.location) {
+    response.resume();
+
+    if (redirectCount >= MAX_REDIRECTS) {
+      throw new Error("下载失败: 重定向次数过多");
+    }
+
+    const nextUrl = new URL(response.headers.location, url).toString();
+    return download(nextUrl, dest, redirectCount + 1);
+  }
+
+  if (response.statusCode !== 200) {
+    response.resume();
+    throw new Error(`下载失败: HTTP ${response.statusCode}`);
+  }
+
+  const tempPath = `${dest}.download`;
+
+  try {
+    await pipelineAsync(response, fs.createWriteStream(tempPath));
+
+    if (process.platform === "win32" && fs.existsSync(dest)) {
+      fs.unlinkSync(dest);
+    }
+
+    fs.renameSync(tempPath, dest);
+  } catch (error) {
+    if (fs.existsSync(tempPath)) {
+      fs.unlinkSync(tempPath);
+    }
+    throw error;
+  }
 }
 
 /**
@@ -95,7 +104,7 @@ async function main() {
   const binDir = path.join(__dirname, "..", "bin");
   const binaryName = getBinaryName();
   const isWindows = process.platform === "win32";
-  const destName = isWindows ? `${PACKAGE_NAME}.exe` : PACKAGE_NAME;
+  const destName = isWindows ? `${PACKAGE_NAME}-native.exe` : `${PACKAGE_NAME}-native`;
   const destPath = path.join(binDir, destName);
 
   // 创建 bin 目录
@@ -107,6 +116,7 @@ async function main() {
   const url = getDownloadUrl(binaryName);
 
   try {
+    console.log(`📥 下载: ${url}`);
     await download(url, destPath);
 
     // 设置可执行权限（非 Windows）

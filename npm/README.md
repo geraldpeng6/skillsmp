@@ -8,6 +8,8 @@ SkillsMP 语义搜索 CLI - 搜索 [skillsmp.com](https://skillsmp.com) 上的 A
 npm install -g skillsmp-search
 ```
 
+安装包会下载当前平台对应的原生二进制，并通过跨平台 Node.js 启动器运行。
+
 ## 使用
 
 ```bash
